@@ -122,7 +122,7 @@ All georeferenced products share one CRS: **Equirectangular, Moon 2000**, sphere
                           │                                        │
                           └──────────────┬─────────────────────────┘
                                          │
-                              ROI subset (Dawes crater)
+                    ROI subset (Dawes crater)  ← MANUAL, cut in ENVI
                                          │
         ┌────────────────┬───────────────┼────────────────┬──────────────────┐
         │                │               │                │                  │
@@ -194,6 +194,23 @@ A spatial crop to the crater plus a spectral trim to the range shared by both se
 (≤ 2600 nm, the RELAB library limit) keeps the analysis focused and comparable.
 The **mafic FCC** (R ≈ 2 µm, G ≈ 1 µm, B = continuum) makes iron-bearing minerals pop:
 fresh crater material appears bright, mature mare soil dark.
+
+> ### ✋ The subset is a manual step — there is no script for it
+>
+> The ROI subsets were cut **by hand in ENVI** (ROI → *Subset Data from ROIs*) from the
+> final selenoreferenced cubes, and saved as ENVI binary + `.hdr` pairs:
+>
+> ```
+> pipeline/outputs/Subset/ch1_subset/ch1_subset  + .hdr    176 × 177 × 85   @ 140 m
+> pipeline/outputs/Subset/ch2_subset/ch2_subset  + .hdr    232 × 231 × 247  @ 94.56 m
+> ```
+>
+> Both must be **Equirectangular Moon 2000** and cover the same ground area — every
+> analysis script downstream reads these two files directly and co-locates points between
+> them by longitude/latitude. Cut your own subset before running any of the analysis steps;
+> the paths above are exactly what `mineral_common.py` expects. Note the binaries are
+> *extensionless* (`ch1_subset`, not `ch1_subset.img`), each inside its own folder —
+> ENVI's default output layout.
 
 ### 3 · Spectral similarity analysis
 
@@ -351,6 +368,7 @@ Moon_Soil_Mineral_Mapping_Hyperspectral/
     ├── scripts/                 ← all processing code
     ├── reference/CH2IIRS/       ← cloned ISRO plugin (algorithm source of truth)
     └── outputs/                 ← ~87 GB ENVI + GeoTIFF products (git-ignored, regenerable)
+        └── Subset/              ← ROI subsets, cut MANUALLY in ENVI (not produced by any script)
 ```
 
 ### Scripts
@@ -439,6 +457,19 @@ Shortcuts: `ch2_pipeline.py all` runs 1 + angle + 2 + 3; `ch2_seleno_destripe.py
 & $py ch1_pipeline.py            # sensor / lon / lat rasters
 & $py ch1_fix_warp.py            # GCP + TPS warp → FINAL
 ```
+
+### Cut the subset — manual, in ENVI
+
+**This step is not scripted.** Open the two final selenoreferenced cubes in ENVI, draw the
+ROI over Dawes crater, and use *Subset Data from ROIs* to write:
+
+| Write to (under `pipeline/outputs/`) | Cut from | Shape |
+|---|---|---|
+| `Subset/ch1_subset/ch1_subset` (+ `.hdr`) | `ch1/seleno/m3g20090731t045352_seleno_rfl` | 176 × 177 × 85 |
+| `Subset/ch2_subset/ch2_subset` (+ `.hdr`) | `ch2/step5_destripe/ch2_iirs_step5_destriped_selenoref` | 232 × 231 × 247 |
+
+Keep both in **Equirectangular Moon 2000** and covering the same ground area. Every analysis
+script below reads these two files by exactly these paths (`SUBSET` in `mineral_common.py`).
 
 ### Run the analysis
 
