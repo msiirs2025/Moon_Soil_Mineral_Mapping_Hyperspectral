@@ -1,0 +1,39 @@
+# ---- Large regenerable products (~87 GB) -------------------------------
+pipeline/outputs/
+# but keep the figures that the README embeds
+!docs/figures/
+
+# ---- Raw mission data (obtain from ISRO PRADAN / PDS) -------------------
+ch1/
+ch2/
+
+# ---- Presentation (large binary) ----------------------------------------
+*.pptx
+
+# ---- Cloned reference plugin -------------------------------------------
+pipeline/reference/CH2IIRS/
+
+# ---- Python -------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+env/
+
+# ---- Geospatial / binary intermediates ----------------------------------
+*.img
+*.hdr
+*.qub
+*.tif
+*.tiff
+*.npy
+*.sli
+*.aux.xml
+!docs/figures/*.png
+
+# ---- OS / editor --------------------------------------------------------
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
