@@ -342,6 +342,7 @@ Moon_Soil_Mineral_Mapping_Hyperspectral/
 ├── README.md                    ← you are here
 ├── ROADMAP.md                   ← status, decisions, open items
 ├── RUNBOOK.md                   ← how to run / rerun / troubleshoot
+├── .env / .env.example          ← machine-specific paths (no secrets)
 ├── docs/figures/                ← figures used in this README
 ├── ch1/                         ← raw Chandrayaan-1 M³ (rfl + loc backplane)          [not tracked]
 ├── ch2/                         ← raw Chandrayaan-2 IIRS (.qub/.xml/.spm) + ISRO ref  [not tracked]
@@ -392,15 +393,35 @@ Moon_Soil_Mineral_Mapping_Hyperspectral/
 - **Python 3.11** with `numpy`, `scipy`, `rasterio` (bundled GDAL 3.10), `scikit-learn`, `matplotlib`.
   There is **no** `osgeo` binding — ENVI headers are written by hand.
 - **QGIS 3.40** for `gdalwarp.exe` / `gdal_translate.exe` (used by the CH‑1 TPS warp).
-  Path is set by `QGIS_BIN` in `scripts/common.py`.
 - **~90 GB free disk** for a full rerun. `pipeline/outputs/` is fully regenerable.
 - Raw inputs in `ch1/` and `ch2/` (not tracked in git — obtain from ISRO PRADAN / PDS).
+
+### Configure
+
+All machine-specific paths live in the repo-root **`.env`** file — nothing is hardcoded in
+the source. Copy the template and edit the two values that matter:
+
+```powershell
+copy .env.example .env
+```
+
+| Key | Purpose | Default |
+|---|---|---|
+| `PYTHON_EXE` | Interpreter used in the commands below | *(none — set it)* |
+| `QGIS_BIN` | Folder containing `gdalwarp.exe` | `C:\Program Files\QGIS 3.40.12\bin` |
+| `MOON_BASE` | Project root | inferred from `common.py`'s location |
+| `IIRS_SCENE`, `IIRS_DIR`, `IIRS_DATE` | CH‑2 raw scene | PDS4 bundle layout under `ch2/` |
+| `M3_SCENE`, `M3_DIR` | CH‑1 raw scene | `ch1/cartOrder (1)/cartorder` |
+
+Every key is optional — an empty or absent value falls back to the default, and a real
+environment variable always wins over the file. `.env` holds **paths only**; it is tracked
+in git, so never put credentials in it.
 
 ### Run the CH‑2 chain
 
 ```powershell
 cd pipeline\scripts
-$py = "C:\Users\HP\anaconda3\python.exe"
+$py = (Get-Content ..\..\.env | Select-String '^PYTHON_EXE=').ToString().Split('=',2)[1]
 
 & $py ch2_pipeline.py 1          # radiance (256 bands)
 & $py ch2_pipeline.py angle      # incidence-angle aux   (must precede step 3)

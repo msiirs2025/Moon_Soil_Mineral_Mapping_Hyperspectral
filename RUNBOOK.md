@@ -4,22 +4,25 @@ How to run, rerun, and troubleshoot the pipeline.
 
 ## 0. Prerequisites
 
-- **Python:** `C:\Users\HP\anaconda3\python.exe` — must have `numpy`, `scipy`, `rasterio`
-  (bundled GDAL 3.10). There is **no** `osgeo` binding; do not `import osgeo`.
-- **QGIS 3.40** at `C:\Program Files\QGIS 3.40.12\bin` — provides `gdalwarp.exe` and
-  `gdal_translate.exe` used by the CH1 warp. Paths are hardcoded in `scripts/common.py`
-  (`QGIS_BIN`) and `scripts/ch1_pipeline.py` (`GDAL_DATA` / `PROJ_LIB` / `PATH`).
-  If QGIS moved, update `QGIS_BIN` in `common.py`.
-- **Disk:** outputs total ~87 GB. Ensure free space on `D:` before a full rerun.
-- **Raw inputs must be present** (already in place):
-  - CH2: `ch2\...\_d_img_d18.qub` / `.xml` / `.spm` (see `IIRS_QUB` in `common.py`).
-  - CH1: `ch1\cartOrder (1)\cartorder\m3g20090731t045352_v01_rfl.img` + `_v03_loc.img`.
+- **Configuration:** all machine-specific paths come from the repo-root **`.env`** file
+  (loaded by `scripts/common.py`). Copy `.env.example` to `.env` and fill it in.
+  A real environment variable overrides the file; an empty value falls back to the default.
+- **Python:** whatever `PYTHON_EXE` points at — must have `numpy`, `scipy`, `rasterio`
+  (bundled GDAL 3.10), `scikit-learn`, `matplotlib`. There is **no** `osgeo` binding;
+  do not `import osgeo`.
+- **QGIS 3.40** — provides `gdalwarp.exe` and `gdal_translate.exe` used by the CH1 warp.
+  Point `QGIS_BIN` in `.env` at its `bin` folder. `ch1_pipeline.py` derives `GDAL_DATA`,
+  `PROJ_LIB` and `PATH` from that one value.
+- **Disk:** outputs total ~87 GB. Ensure free space before a full rerun.
+- **Raw inputs must be present:**
+  - CH2: the PDS4 bundle under `ch2\` (`IIRS_SCENE` / `IIRS_DIR` / `IIRS_DATE` in `.env`).
+  - CH1: `<M3_DIR>\<M3_SCENE>_v01_rfl.img` + `_v03_loc.img`.
 
 All commands below assume this working directory:
 
 ```powershell
-cd "D:\new project moon\pipeline\scripts"
-$py = "C:\Users\HP\anaconda3\python.exe"
+cd pipeline\scripts
+$py = (Get-Content ..\..\.env | Select-String '^PYTHON_EXE=').ToString().Split('=',2)[1]
 ```
 
 ## 1. Run CH2 (Chandrayaan‑2 IIRS) — full chain
@@ -82,8 +85,9 @@ Expected: incidence mean|Δ| ~0; temperature mean|Δ| ≈ 0.1 K; reflectance med
 
 | Symptom | Likely cause / fix |
 |---|---|
-| `command failed` / `cmd failed` from a warp | QGIS path wrong — check `QGIS_BIN` in `common.py`; confirm `gdalwarp.exe` exists there. |
-| `ModuleNotFoundError: rasterio` (or numpy/scipy) | Wrong interpreter — use `C:\Users\HP\anaconda3\python.exe`, not system Python. |
+| `command failed` / `cmd failed` from a warp | QGIS path wrong — check `QGIS_BIN` in `.env`; confirm `gdalwarp.exe` exists there. |
+| `ModuleNotFoundError: rasterio` (or numpy/scipy) | Wrong interpreter — use the one named by `PYTHON_EXE` in `.env`, not system Python. |
+| A path resolves to the wrong place | A shell environment variable of the same name overrides `.env`. Check with `Get-ChildItem Env:`. |
 | CH1 longitude looks collapsed/wrong | You ran only `ch1_pipeline.py`. Run `ch1_fix_warp.py` (GCP+TPS) — that is the correct product. |
 | Step 2/3/4/5 errors "file not found" | A prior step's `.img` is missing — steps are sequential; rerun the earlier step. |
 | `step3` fails loading `angle.npy` | Run `ch2_pipeline.py angle` first. |

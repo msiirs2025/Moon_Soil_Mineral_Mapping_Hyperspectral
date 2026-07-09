@@ -13,6 +13,11 @@ ch2/
 # ---- Cloned reference plugin -------------------------------------------
 pipeline/reference/CH2IIRS/
 
+# ---- Local config overrides ---------------------------------------------
+# `.env` IS tracked (paths only, no secrets). Anything private goes here:
+.env.local
+.env.*.local
+
 # ---- Python -------------------------------------------------------------
 __pycache__/
 *.py[cod]

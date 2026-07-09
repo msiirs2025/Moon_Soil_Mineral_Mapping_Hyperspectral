@@ -15,12 +15,12 @@ import numpy as np
 import rasterio
 from rasterio.transform import Affine
 sys.path.insert(0, os.path.dirname(__file__))
-from common import (OUT, MOON_GEOG, MOON_EQC, QGIS_BIN, GDALWARP, GDALTRANS)
+from common import (OUT, MOON_GEOG, MOON_EQC, QGIS_BIN, GDALWARP, GDALTRANS,
+                    M3_RFL, M3_LOC)
 
-M3_DIR = r"D:\new project moon\ch1\cartOrder (1)\cartorder"
-RFL = os.path.join(M3_DIR, "m3g20090731t045352_v01_rfl.img")
-RFL_HDR = os.path.join(M3_DIR, "m3g20090731t045352_v01_rfl.hdr")
-LOC = os.path.join(M3_DIR, "m3g20090731t045352_v03_loc.img")
+RFL = M3_RFL
+RFL_HDR = os.path.splitext(M3_RFL)[0] + ".hdr"
+LOC = M3_LOC
 L, B, S = 29939, 85, 304          # lines, bands, samples
 NODATA = -999.0
 LAT_CLIP = -80.0                   # exclude near-pole tail from eqc product

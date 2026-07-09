@@ -28,7 +28,7 @@ Outputs (pipeline/outputs/mineral_analysis/):
     crater_profile_points.csv           tidy long-format spectra
     crater_profile_report.txt           centre, rim, per-zone azimuth & coords
 
-Run with C:\\Users\\HP\\anaconda3\\python.exe
+Run with the interpreter named by PYTHON_EXE in the repo-root .env file.
 """
 import os, sys, csv
 import numpy as np

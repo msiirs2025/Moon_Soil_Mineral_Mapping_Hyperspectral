@@ -23,7 +23,7 @@ Outputs (pipeline/outputs/band_parameters/):
     envi/ch{1,2}_{BR,BT,BS,BC}.img+.hdr   ENVI single-band float32 (georeferenced)
     band_parameters_report.txt     bands actually used per parameter
 
-Run with C:\\Users\\HP\\anaconda3\\python.exe
+Run with the interpreter named by PYTHON_EXE in the repo-root .env file.
 """
 import os, sys
 import numpy as np

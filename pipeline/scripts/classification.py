@@ -47,7 +47,7 @@ Outputs (pipeline/outputs/classification/):
     envi/ch{1,2}_{SAM,SFF,SVM}.img+.hdr   ENVI Classification (uint8, class names+lookup)
     classification_report.txt        per-class pixel counts/% and method agreement
 
-Run with C:\\Users\\HP\\anaconda3\\python.exe
+Run with the interpreter named by PYTHON_EXE in the repo-root .env file.
 """
 import os, sys
 import numpy as np

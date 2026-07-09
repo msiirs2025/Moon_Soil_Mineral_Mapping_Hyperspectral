@@ -10,23 +10,61 @@ Design goals:
 import os, struct, subprocess
 import numpy as np
 
+# ---------------------------------------------------------------- configuration
+# Machine-specific paths live in the repo-root `.env` file, not in the source.
+# Precedence: real environment variable > .env entry > default below.
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+def _load_dotenv(path):
+    """Read KEY=VALUE lines into os.environ. Pre-existing env vars are not overwritten."""
+    if not os.path.isfile(path):
+        return
+    with open(path, encoding="utf-8") as f:
+        for raw in f:
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            os.environ.setdefault(key.strip(), val.strip().strip('"').strip("'"))
+
+
+_load_dotenv(os.path.join(REPO_ROOT, ".env"))
+
+
+def _env(key, default):
+    """Environment override, falling back to `default` when unset or empty."""
+    return os.environ.get(key) or default
+
+
 # ---------------------------------------------------------------- paths / tools
-BASE      = r"D:\new project moon"
-OUT       = os.path.join(BASE, "pipeline", "outputs")
-REF_DIR   = os.path.join(BASE, "pipeline", "reference", "CH2IIRS")
+BASE      = _env("MOON_BASE", REPO_ROOT)
+OUT       = _env("MOON_OUT", os.path.join(BASE, "pipeline", "outputs"))
+REF_DIR   = _env("CH2IIRS_REF_DIR", os.path.join(BASE, "pipeline", "reference", "CH2IIRS"))
 SOLAR_TXT = os.path.join(REF_DIR, "Solar flux.txt")
 
-QGIS_BIN  = r"C:\Program Files\QGIS 3.40.12\bin"
+QGIS_BIN  = _env("QGIS_BIN", r"C:\Program Files\QGIS 3.40.12\bin")
 GDALWARP  = os.path.join(QGIS_BIN, "gdalwarp.exe")
 GDALTRANS = os.path.join(QGIS_BIN, "gdal_translate.exe")
 
 # ---------------------------------------------------------------- CH2 IIRS meta
-IIRS_QUB = os.path.join(BASE, r"ch2\ch2\ch2\ch2_iir_nri_20250804T0253259678_d_img_d18",
-                        r"data\raw\20250804\ch2_iir_nri_20250804T0253259678_d_img_d18.qub")
-IIRS_XML = IIRS_QUB[:-4] + ".xml"
-IIRS_SPM = os.path.join(BASE, r"ch2\ch2\ch2\ch2_iir_nri_20250804T0253259678_d_img_d18",
-                        r"miscellaneous\calibrated\20250804\ch2_iir_nri_20250804T0253259678_d_img_d18.spm")
+IIRS_SCENE = _env("IIRS_SCENE", "ch2_iir_nri_20250804T0253259678_d_img_d18")
+IIRS_DIR   = _env("IIRS_DIR", os.path.join(BASE, "ch2", "ch2", "ch2", IIRS_SCENE))
+IIRS_DATE  = _env("IIRS_DATE", "20250804")
+
+IIRS_QUB = _env("IIRS_QUB",
+                os.path.join(IIRS_DIR, "data", "raw", IIRS_DATE, IIRS_SCENE + ".qub"))
+IIRS_XML = _env("IIRS_XML", IIRS_QUB[:-4] + ".xml")
+IIRS_SPM = _env("IIRS_SPM",
+                os.path.join(IIRS_DIR, "miscellaneous", "calibrated", IIRS_DATE,
+                             IIRS_SCENE + ".spm"))
 IIRS_S, IIRS_L, IIRS_B = 250, 13569, 256      # samples, lines, bands
+
+# ---------------------------------------------------------------- CH1 M3 meta
+M3_SCENE = _env("M3_SCENE", "m3g20090731t045352")
+M3_DIR   = _env("M3_DIR", os.path.join(BASE, "ch1", "cartOrder (1)", "cartorder"))
+M3_RFL   = _env("M3_RFL", os.path.join(M3_DIR, M3_SCENE + "_v01_rfl.img"))
+M3_LOC   = _env("M3_LOC", os.path.join(M3_DIR, M3_SCENE + "_v03_loc.img"))
 IIRS_LINE_EXP = 0.05306                        # s per line (53.06 ms)
 RAD_SCALE = 0.01                               # stored integer -> radiance (CH2IIRS convention)
 

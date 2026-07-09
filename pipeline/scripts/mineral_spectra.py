@@ -26,7 +26,7 @@ Outputs (pipeline/outputs/mineral_analysis/):
   extracted_spectra_<name>.sli    ENVI spectral library per sensor   (2)
   match_report.txt                per-mineral selection summary      (1)
 
-Run with C:\\Users\\HP\\anaconda3\\python.exe
+Run with the interpreter named by PYTHON_EXE in the repo-root .env file.
 """
 import os, sys, csv
 import numpy as np
